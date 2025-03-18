@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloom's Taxonomy Analyzer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+            /* Reference section styles */
+            .references {
+            margin-top: 30px;
+            text-align: center;
+    }
+
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db); /* Dark Blue Gradient */
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .header img {
+            height: 80px;
+            margin-right: 20px;
+            border-radius: 50%;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background-color: #333;
+            color: #fff;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease-in-out; /* Smooth transition */
+            z-index: 10;
+        }
+        .sidebar.hidden {
+          transform: translateX(-100%);
+        }
+        
+        .sidebar h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #fff;
+            padding-bottom: 10px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar li {
+            margin-bottom: 15px;
+        }
+
+        .sidebar a {
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar a:hover {
+            background-color: #555;
+        }
+      .toggle-sidebar{
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 100;
+        background-color: #3498db;
+        border: none;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: 270px;
+            padding: 30px;
+            flex-grow: 1; /* Allow main content to expand */
+        }
+
+        .main-content h2 {
+            color: #333;
+        }
+
+        .input-area {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        #csvFileInput {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #27ae60; /* Green */
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #219653;
+        }
+
+        #error-message {
+            color: #e74c3c; /* Red */
+            margin-top: 10px;
+        }
+
+        #resultsContainer {
+            overflow-x: auto;
+        }
+        #resultsTable {
+          width: 100%;
+        }
+
+        #resultsTable th, #resultsTable td {
+          border: 1px solid #ddd;
+          padding: 8px;
+          text-align: left;
+        }
+        #resultsTable th {
+          background-color: #f2f2f2;
+          font-weight: bold;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 15px;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+        }
+        /* Responsive design */
+        @media (max-width: 768px) {
+          .header {
+              flex-direction: column;
+              padding: 10px;
+          }
+
+          .header img {
+              margin-bottom: 10px;
+              margin-right: 0;
+          }
+          .sidebar {
+              width: 100%;
+              position: static;
+          }
+          .main-content {
+              margin-left: 0;
+          }
+          .toggle-sidebar {
+              position: fixed;
+              top: 10px;
+              left: 10px;
+          }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <img src="logo.jpg" alt="Bloom's Logo">
+        <h1>Bloom's Taxonomy Analyzer</h1>
+    </header>
+    <button class="toggle-sidebar" id="toggleSidebar"><i class="fas fa-bars"></i></button>
+    <aside class="sidebar">
+        <h2>Navigation</h2>
+        <ul>
+            <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="#analyze"><i class="fas fa-search"></i> Analyze Questions</a></li>
+            <li><a href="blooms_data.html"><i class="fas fa-table"></i> Action Verbs by Category</a></li>
+            <li><a href="#about"><i class="fas fa-info-circle"></i> About</a></li>
+            <li><a href="#contact"><i class="fas fa-envelope"></i> Contact</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <section id="analyze">
+            <h2>Analyze Your Questions</h2>
+            <div class="input-area">
+                <input type="file" id="csvFileInput" accept=".csv">
+                <button onclick="processAndExportCSV()">Process and Export CSV</button>
+                <div id="error-message"></div>
+            </div>
+            <div id="resultsContainer"></div>
+        </section>
+        <section id="about">
+            <h2>About Bloom's Taxonomy</h2>
+            <p>Bloom's Taxonomy is a hierarchical model used to classify educational learning objectives into levels of complexity. It provides a framework for understanding how learning progresses from basic recall to higher-order thinking skills.</p>
+            <p><img alt="Bloom's Taxonomy" class="" height="450" width="650" loading="lazy" src="https://0utwqfl7.cdn.imgeng.in/administration/academic-affairs/instructional-design-delivery/articles/_images/blooms-taxonomy.png" width="1010"/></p>
+            <p>Bloom's Taxonomy is a classification of the different objectives and skills that instructors set for their students, which are known as learning objectives. In 1956, Benjamin Bloom, an educational psychologist at the University of Chicago coined a categorization of educational goals. The framework consisted of 6 major categories:&#160;Knowledge, Comprehension, Application, Analysis, Synthesis and Evaluation:</p>
+            <p>The categories were revised in 2001 to include the following six levels of learning:</p>
+            <ul>
+            <li><strong>Remember:</strong> Recall facts and basic concepts (Action verbs include: define, duplicate, list, memorize, repeat, state)</li>
+            <li><strong>Understand: </strong>Explain ideas or concepts (Action verbs include: classify, describe, discuss, explain, locate, recognize, report, select, translate)</li>
+            <li><strong>Apply: </strong>Use information in new situations (Action verbs include: execute, implement, solve, use, demonstrate, interpret, operate, schedule, sketch)</li>
+            <li><strong>Analyze: </strong>Make connections among ideas (Action verbs include: differentiate, organize, relate, compare, contrast, distinguish, examine, experiment, question, test)</li>
+            <li><strong>Evaluate: </strong>Justify a stand or decision (Action verbs include: appraise, argue, defend, judge, select, support, value, critique, weigh)</li>
+            <li><strong>Create: </strong>Produce new or original work (Action verbs include: design, assemble, construct, conjecture, develop, formulate, author investigate)</li>
+            </ul>
+            <p>When developing learning objectives, start by considering the level of learners in your course. First year students may be at a starting point of building unconditional knowledge, whereas older students should be able to master higher-order learning objectives.</p>
+            <p>Consider the following about your students when designing your course:</p>
+            <ul>
+            <li>Before they understand a concept, students must remember it.</li>
+            <li>For students to be able to apply a concept, they first have to understand it.</li>
+            <li>In order to evaluate a process, they first have to analyze it.</li>
+            <li>To create an accurate conclusion, students would have to have completed a thorough evaluation.</li>
+            </ul>
+        </section>
+        <section id="contact">
+            <h2>Contact</h2>
+            <p>If you have any questions or suggestions, please feel free to reach out to us at <a href="mailto:menadagi@gmail.com">manadagi@gmail.com</a>.</p>
+        </section>
+    </main>
+   <!-- References section -->
+   <section class="references">
+    <h2>References for Further Information</h2>
+    <ul>
+        <li>
+            <a href="https://tips.uark.edu/blooms-taxonomy-verb-chart/#gsc.tab=0/" target="_blank">
+                The University of Arkansas -Bloom’s Taxonomy Verb Chart
+            </a>
+        </li>
+        <li>
+            <a href="https://www.naeyc.org/sites/default/files/globally-shared/downloads/PDFs/revised-blooms-taxonomy-action-verbs.pdf/" target="_blank">
+              REVISED Bloom's Taxonomy Action Verbs
+            </a>
+        </li>
+        <li>
+          <a href="https://oralhealthbc.ca/wp-content" target="_blank">British Colombia College of Oral Health Professionals Bloom's Taxonomy of Action Verbs</a>
+      </li>
+        <li>
+            <a href="https://www.salisbury.edu/administration/academic-affairs/instructional-design-delivery/articles/blooms-taxonomy-action-verbs.aspx" target="_blank">
+              Bloom's Taxonomy Action Verbs
+          </a>
+          </li>
+        <!-- Add more reference links here as needed -->
+    </ul>
+</section>
+
+
+    <footer class="footer">
+        <p>&copy; 2025 alex ICT solution | All Rights Reserved</p>
+    </footer>
+
+    <script>
+        // Taxonomy Data (same as before)
+        const taxonomyData = {
+            cognitive: {
+					Remember: ["Cite", "what", "Count", "Define", "Describe", "Draw", "Enumerate", "Identify", "Index", "Indicate", "Label", "List", "Match", "Meet", "Name", "Outline", "Point", "Quote", "Read", "Recall", "Recite", "Recognize", "Record", "Repeat", "Reproduce", "Review", "Select", "State", "Study", "Tabulate", "Tally", "Trace", "Write"],
+					Understand: ["Add", "How", "Approximate", "Articulate", "Associate", "Characterize", "Clarify", "Classify", "Compare", "Compute", "Contrast", "Convert", "Defend", "Describe", "Detail", "Differentiate", "Discuss", "Distinguish", "Elaborate", "Estimate", "Example", "Explain", "Express", "Extend", "Factor", "Generalize", "Give", "Infer", "Interact", "Interpolate", "Interpret", "Observe", "Paraphrase", "Picture graphically", "Predict", "Review", "Rewrite", "Subtract", "Summarize", "Translate", "Visualize"],
+					Apply: ["Acquire", "How", "Adapt", "Allocate", "Alphabetize", "Amend", "Apply", "Ascertain", "Assign", "Attain", "Avoid", "Back", "Calculate", "Capture", "Change", "Chart", "Classify", "Complete", "Compute", "Concatenate", "Conduct", "Construct", "Consult", "Convey", "Coordinate", "Customize", "Deliver", "Demonstrate", "Depreciate", "Derive", "Determine", "Diminish", "Discover", "Divide", "Draw", "Employ", "Engineer", "Examine", "Execute", "Exercise", "Expand", "Explore", "Expose", "Express", "Factor", "Figure", "Graph", "Guide", "Handle", "Illustrate", "Implement", "Interconvert", "Investigate", "Manipulate", "Modify", "Multiply", "Obtain", "Operate", "Perform", "Personalize", "Plot", "Practice", "Predict", "Prepare", "Price", "Process", "Produce", "Project", "Protect", "Prove", "Provide", "Relate", "Round off", "Sequence", "Show", "Simplify", "Simulate", "Sketch", "Solve", "Subscribe", "Tabulate", "Tally", "Transcribe", "Translate", "Use", "Utilize"],
+					Analyze: ["Accept", "How", "Administer", "Allow", "Analyze", "Audit", "Blueprint", "Breadboard", "Break", "Characterize", "Chart", "Check", "Chunk", "Classify", "Compare", "Confirm", "Contrast", "Correlate", "Corroborate", "Delegate", "Detect", "Diagnose", "Diagram", "Differentiate", "Direct", "Discriminate", "Dissect", "Distinguish", "Document", "Ensure", "Establish", "Examine", "Explain", "Explore", "Extract", "Extrapolate", "Figure out", "File", "Group", "Identify", "Illustrate", "Infer", "Interrupt", "Inventory", "Investigate", "Isolate", "Lay out", "Limit", "Link", "Manage", "Maximize", "Minimize", "Moderate", "Monitor", "Negotiate", "Optimize", "Order", "Outline", "Point out", "Prioritize", "Proofread", "Prove", "Query", "Reconcile", "Relate", "Resolve", "Select", "Separate", "Size up", "Subdivide", "Summarize", "Train", "Transform", "Troubleshoot"],
+					Evaluate: ["Advise", "Appraise", "Assess", "Authenticate", "Compare", "Conclude", "Consolidate", "Contrast", "Counsel", "Criticize", "Critique", "Defend", "Determine", "Discriminate", "Estimate", "Evaluate", "Explain", "Grade", "Hire", "Interpret", "Judge", "Justify", "Measure", "Mediate", "Motivate", "Predict", "Prescribe", "Preserve", "Rank", "Rate", "Recommend", "Reconcile", "Release", "Resolve", "Select", "Summarize", "Support", "Test", "Uphold", "Validate", "Verify"],
+					Create: ["Animate", "Anticipate", "Arbitrate", "Arrange", "Assemble", "Brief", "Budget", "Categorize", "Code", "Collect", "Combine", "Compile", "Compose", "Consolidate", "Construct", "Cope", "Correspond", "Create", "Cultivate", "Debug", "Depict", "Design", "Develop", "Devise", "Dictate", "Enhance", "Exchange", "Expand", "Explain", "Facilitate", "Forecast", "Format", "Formulate", "Frame", "Generalize", "Generate", "Handle", "Import", "Improve", "Incorporate", "Integrate", "Interface", "Join", "Lecture", "Model", "Reorganize", "Revise", "Rewrite", "Specify", "Summarize", "Teach", "Unify", "Write", "Prescribe", "Produce", "Program", "Rearrange", "Reconstruct", "Refer", "Relate"]
+				},
+				affective: {
+					Receiving: ["Ask", "Choose", "Follow", "Give", "Hold", "Select", "Show interest", "Listen", "Attend", "Show awareness", "Be receptive", "Tolerate", "Hear"],
+					Responding: ["Accept", "Responsibility", "Answer", "Assist", "Be willing to", "Comply", "Conform", "Enjoy", "Greet", "Help", "Obey", "Perform", "Practice", "Present", "Report", "Select", "Tell", "Participate", "Discuss", "React", "Contribute"],
+					Valuing: ["Associate with", "Assume responsibility", "Believe in", "Be convinced", "Complete", "Describe", "Differentiate", "Have faith in", "Initiate", "Invite", "Join", "Justify", "Participate", "Propose", "Select", "Share", "Subscribe to", "Work", "Demonstrate", "Support", "Argue", "Commit", "Defend", "Value", "Appreciate"],
+					Organization: ["Adhere to", "Alter", "Arrange", "Classify", "Combine", "Defend", "Establish", "Form judgments", "Identify with", "Integrate", "Organize", "Weigh alternatives", "Compare", "Relate", "Synthesize", "Formulate", "Prioritize", "Balance"],
+					Characterization: ["Act", "Change behavior", "Develop code of behavior", "Develop philosophy", "Influence", "Judge", "Propose", "Qualify", "Question", "Serve", "Show mature attitude", "Solve", "Verify", "Display", "Internalize", "Practice", "Advocate", "Discriminate", "Resolve"]
+				},
+				psychomotor: {
+					Imitation: ["Follow", "Grip", "Hammer", "Hold", "Press", "Turn on/off", "Type", "Use"],
+					Manipulation: ["Activate", "Adjust", "Align", "Apply", "Change", "Clean", "Close", "Drill", "Fasten", "Heat", "Hook", "Identify", "Load", "Locate", "Loosen", "Mix", "Nail", "Operate", "Paint", "Pull", "Push", "Sharpen", "Start", "Stir", "Weigh", "Wrap"],
+					Precision: ["Arrange", "Assemble", "Balance", "Break down", "Build", "Calibrate", "Combine", "Connect", "Construct", "Correct", "Dismantle", "Fix", "Grind", "Mend", "Repair", "Replace", "Rotate", "Sand", "Sew", "Set", "Sketch"],
+					Articulation: ["Compose", "Create", "Demonstrate", "Design", "Make", "Manipulate", "Produce", "Transfer", "Troubleshoot", "Tune"],
+					Naturalization: ["Master", "Operate"]
+				}
+        };
+        // Classify Function (same as before)
+        function classifyQuestion(question) {
+            const foundCategories = { cognitive: [], affective: [], psychomotor: [] };
+
+            for (const domain in taxonomyData) {
+                for (const [category, verbs] of Object.entries(taxonomyData[domain])) {
+                    for (const verb of verbs) {
+                        const regex = new RegExp(`\\b${verb}(?:ing|s|ed)?\\b`, 'i');
+                        if (regex.test(question)) {
+                            foundCategories[domain].push(category);
+                            break;
+                        }
+                    }
+                }
+            }
+            return foundCategories;
+        }
+        // Process and Export CSV Function (same as before)
+        function processAndExportCSV() {
+          const fileInput = document.getElementById('csvFileInput');
+          const resultsContainer = document.getElementById('resultsContainer');
+          const errorMessageElement = document.getElementById('error-message');
+
+          // Clear previous results and errors
+          resultsContainer.innerHTML = '';
+          errorMessageElement.textContent = '';
+
+          const file = fileInput.files[0];
+          if (!file) {
+              errorMessageElement.textContent = 'Error: Please select a CSV file.';
+              return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = function (e) {
+              const csvData = e.target.result.trim(); // Trim to remove unnecessary spaces
+              const lines = csvData.split('\n').filter(line => line.trim() !== ""); // Remove empty lines
+
+              if (lines.length === 0) {
+                  errorMessageElement.textContent = 'Error: The selected CSV file is empty.';
+                  return;
+              }
+
+              // Define headers
+              let headerRow = ["#", "Question", "Cognitive Domain", "Affective Domain", "Psychomotor Domain"];
+              let csvRows = [headerRow]; // Array to store CSV rows (instead of a string)
+
+              // Create table structure
+              let tableHTML = `<table id='resultsTable' border='1' style='border-collapse: collapse;'>
+                                  <thead><tr>${headerRow.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+                                  <tbody>`;
+
+              let questionCounter = 1;
+              let tableRows = ""; // Store table rows separately
+
+              for (let i = 0; i < lines.length; i++) {
+                  const question = lines[i].trim();
+                  if (!question) continue; // Skip empty lines
+
+                  const classification = classifyQuestion(question);
+                  const cognitive = classification.cognitive.length > 0 ? classification.cognitive.join(', ') : 'Unknown';
+                  const affective = classification.affective.length > 0 ? classification.affective.join(', ') : 'Unknown';
+                  const psychomotor = classification.psychomotor.length > 0 ? classification.psychomotor.join(', ') : 'Unknown';
+
+                  // Escape values for CSV safety
+                  const row = [questionCounter, `"${question}"`, `"${cognitive}"`, `"${affective}"`, `"${psychomotor}"`];
+                  csvRows.push(row); // Add row to CSV data array
+
+                  // Append table row
+                  tableRows += `<tr><td>${questionCounter}</td><td>${question}</td><td>${cognitive}</td><td>${affective}</td><td>${psychomotor}</td></tr>`;
+                  questionCounter++;
+              }
+
+              // Finalize table HTML
+              tableHTML += tableRows + "</tbody></table>";
+
+              // ✅ FIRST, Display the table before triggering CSV download
+              resultsContainer.innerHTML = tableHTML;
+
+              // ✅ THEN, Generate CSV file content properly
+              let csvContent = csvRows.map(e => e.join(",")).join("\n"); // Convert array to CSV format
+              const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+
+              // ✅ Create and trigger CSV download
+              const link = document.createElement("a");
+              link.setAttribute("href", url);
+              link.setAttribute("download", "taxonomy_results.csv");
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              URL.revokeObjectURL(url); // Clean up memory
+          };
+
+          reader.readAsText(file);
+      }
+      //sidebar toggle
+       const toggleSidebarButton = document.getElementById('toggleSidebar');
+        const sidebar = document.querySelector('.sidebar');
+
+        toggleSidebarButton.addEventListener('click', () => {
+            sidebar.classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>

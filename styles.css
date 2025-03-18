@@ -1,0 +1,154 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    text-align: justify;
+    margin: 0; /* Remove default body margins */
+    line-height: 1.6;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+/* Header Styles */
+header {
+    width: 100%;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 5%; /* Add left/right padding */
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100; /* Ensure header stays on top */
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+}
+
+header h2 {
+    text-align: center;
+    margin: 0;
+    padding: 5px 0;
+}
+
+/* Navigation Bar */
+header nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0;
+    text-align: center;
+}
+
+header nav ul li {
+    display: inline;
+    margin: 0 10px;
+}
+
+header nav ul li a {
+    color: white;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+header nav ul li a:hover {
+    background-color: #45a049; /* Darker green on hover */
+}
+
+/* Main Content Styles */
+main {
+    margin-top: 120px; /* Adjust to header height plus some space */
+    padding: 0 5%; /* Match header's left/right padding */
+    display: block; /* Add this to prevent content from overlapping the header */
+}
+
+section {
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+}
+/* Footer Styles */
+footer {
+    text-align: center;
+    padding: 20px 5%;
+    background-color: #4CAF50;
+    color: white;
+}
+
+/* Text Elements */
+p {
+    text-align: justify;
+}
+
+h2, h3 {
+    color: #4CAF50;
+    text-align: center;
+}
+/* Input and button styles*/
+input,
+button {
+    margin: 10px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Special Classes */
+.white-background {
+    background-color: white;
+    color: black;
+    padding: 20px;
+    border-radius: 10px;
+}
+/* Error message*/
+.error-message {
+    color: red;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+/* Basic Responsive Design */
+@media (max-width: 768px) {
+    body {
+        margin: 0; /* Adjust body margin */
+    }
+
+    header {
+        padding: 10px 2%; /* Adjust header padding */
+    }
+
+    header nav ul li {
+        display: block;
+        margin: 5px 0;
+    }
+
+    main {
+        margin-top: 100px; /* Adjust for smaller header */
+        padding: 0 2%; /* Adjust main padding */
+    }
+
+    section {
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    footer{
+        padding: 10px 2%; /* Adjust footer padding */
+    }
+
+    input,
+    button{
+        padding: 5px;
+        margin: 5px;
+    }
+}
